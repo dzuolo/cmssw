@@ -324,7 +324,7 @@ process.dqmBeamMonitor.resetPVEveryNLumi = 5 # was 10 for HI
 
 process.dqmBeamMonitor.PVFitter.minNrVerticesForFit = 20
 process.dqmBeamMonitor.PVFitter.minVertexNdf = 10
-process.dqmBeamMonitor.PVFitter.errorScale = 1.22
+process.dqmBeamMonitor.PVFitter.errorScale = 1.0
 
 #----------------------------
 # Pixel tracks/vertices reco
@@ -429,12 +429,31 @@ else:
     )
 print("Configured frontierKey", options.runUniqueKey)
 
+#--------
+# Do no run on events with pixel or strip with HV off
+
+process.stripTrackerHVOn = cms.EDFilter( "DetectorStateFilter",
+DCSRecordLabel = cms.untracked.InputTag( "onlineMetaDataDigis" ),
+DcsStatusLabel = cms.untracked.InputTag( "scalersRawToDigi" ),
+DebugOn = cms.untracked.bool( False ),
+DetectorType = cms.untracked.string( "sistrip" )
+)
+
+process.pixelTrackerHVOn = cms.EDFilter( "DetectorStateFilter",
+DCSRecordLabel = cms.untracked.InputTag( "onlineMetaDataDigis" ),
+DcsStatusLabel = cms.untracked.InputTag( "scalersRawToDigi" ),
+DebugOn = cms.untracked.bool( False ),
+DetectorType = cms.untracked.string( "pixel" )
+)
+
 #---------
 # Final path
 if (not process.runType.getRunType() == process.runType.hi_run):
     process.p = cms.Path(process.scalersRawToDigi
                        * process.tcdsDigis
                        * process.onlineMetaDataDigis
+                       * process.stripTrackerHVOn                        
+                       * process.pixelTrackerHVOn                        
                        * process.dqmTKStatus
                        * process.hltTriggerTypeFilter
                        * process.dqmcommon
@@ -445,6 +464,8 @@ else:
     process.p = cms.Path(process.scalersRawToDigi
                        * process.tcdsDigis
                        * process.onlineMetaDataDigis
+                       * process.stripTrackerHVOn                        
+                       * process.pixelTrackerHVOn                        
                        * process.dqmTKStatus
                        * process.hltTriggerTypeFilter
                        * process.filter_step # the only extra: pix-multi filter
