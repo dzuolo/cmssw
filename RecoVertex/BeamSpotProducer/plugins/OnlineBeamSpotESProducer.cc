@@ -38,12 +38,14 @@ private:
   BeamSpotObjects fakeBS_;
   const int timeThreshold_;
   const double sigmaZThreshold_;
+  const double sigmaXYThreshold_;
 };
 
 OnlineBeamSpotESProducer::OnlineBeamSpotESProducer(const edm::ParameterSet& p)
     // get parameters
     : timeThreshold_(p.getParameter<int>("timeThreshold")),
-      sigmaZThreshold_(p.getParameter<double>("sigmaZThreshold")) {
+      sigmaZThreshold_(p.getParameter<double>("sigmaZThreshold")),
+      sigmaXYThreshold_(p.getParameter<double>("sigmaXYThreshold")) {
   auto cc = setWhatProduced(this);
 
   fakeBS_.setBeamWidthX(0.1);
@@ -60,6 +62,7 @@ void OnlineBeamSpotESProducer::fillDescriptions(edm::ConfigurationDescriptions& 
   edm::ParameterSetDescription dsc;
   dsc.add<int>("timeThreshold", 48)->setComment("hours");
   dsc.add<double>("sigmaZThreshold", 2.)->setComment("cm");
+  dsc.add<double>("sigmaXYThreshold", 4.)->setComment("um");
   desc.addWithDefaultLabel(dsc);
 }
 
@@ -88,7 +91,7 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::compareBS(const BeamSpotO
     edm::LogInfo("OnlineBeamSpotESProducer") << "Defaulting to fake because both payloads are too old.";
     return nullptr;
   } else if (diffBStime2 > limitTime) {
-    if (bs1->sigmaZ() > sigmaZThreshold_ && bs1->beamType() == 2) {
+    if (bs1->sigmaZ() > sigmaZThreshold_ && bs1->beamType() == 2 && bs1->beamWidthX() > sigmaXYThreshold_*1E-4 && bs1->beamWidthY() > sigmaXYThreshold_*1E-4) {
       return bs1;
     } else {
       edm::LogInfo("OnlineBeamSpotESProducer")
@@ -96,7 +99,7 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::compareBS(const BeamSpotO
       return nullptr;
     }
   } else if (diffBStime1 > limitTime) {
-    if (bs2->sigmaZ() > sigmaZThreshold_ && bs2->beamType() == 2) {
+    if (bs2->sigmaZ() > sigmaZThreshold_ && bs2->beamType() == 2 && bs2->beamWidthX() > sigmaXYThreshold_*1E-4 && bs2->beamWidthY() > sigmaXYThreshold_*1E-4) {
       return bs2;
     } else {
       edm::LogInfo("OnlineBeamSpotESProducer")
@@ -129,7 +132,7 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::checkSingleBS(const BeamS
   auto limitTime = std::chrono::microseconds((std::chrono::hours)timeThreshold_).count();
 
   // Check that the BS is within the timeThreshold, converges and passes the sigmaZthreshold
-  if (diffBStime1 < limitTime && bs1->sigmaZ() > sigmaZThreshold_ && bs1->beamType() == 2) {
+  if (diffBStime1 < limitTime && bs1->sigmaZ() > sigmaZThreshold_ && bs1->beamType() == 2 && bs1->beamWidthX() > sigmaXYThreshold_*1E-4 && bs1->beamWidthY() > sigmaXYThreshold_*1E-4) {
     return bs1;
   } else {
     return nullptr;
