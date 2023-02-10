@@ -85,9 +85,9 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::compareBS(const BeamSpotO
   // Logic to choose between the two BeamSpots:
   // 1. If both BS are older than limitTime retun fake BS
   // 2. If only one BS is newer than limitTime return it only if
-  //     it passes isGoosBS (checks on sigmaZ, sigmaXY and fit convergence)
+  //     it passes isGoodBS (checks on sigmaZ, sigmaXY and fit convergence)
   // 3. If both are newer than the limit threshold return the BS that
-  //     passes isGoosBS and has larger sigmaZ
+  //     passes isGoodBS and has larger sigmaZ
   if (diffBStime1 > limitTime && diffBStime2 > limitTime) {
     edm::LogInfo("OnlineBeamSpotESProducer") << "Defaulting to fake because both payloads are too old.";
     return nullptr;
