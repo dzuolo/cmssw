@@ -87,7 +87,7 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::compareBS(const BeamSpotO
   // 2. If only one BS is newer than limitTime return it only if it has
   //    sigmaZ larger than sigmaZthreshold_ and the fit converged (BeamType 2)
   // 3. If both are newer than the limit threshold return
-  //    the BS that converged and has larger sigmaZ
+  //    the BS that converged and has larger sigmaZ and has meaningful transverse widths (larger than 4 um)
   if (diffBStime1 > limitTime && diffBStime2 > limitTime) {
     edm::LogInfo("OnlineBeamSpotESProducer") << "Defaulting to fake because both payloads are too old.";
     return nullptr;
