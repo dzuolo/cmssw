@@ -30,7 +30,7 @@ public:
 private:
   const BeamSpotOnlineObjects* compareBS(const BeamSpotOnlineObjects* bs1, const BeamSpotOnlineObjects* bs2);
   const BeamSpotOnlineObjects* checkSingleBS(const BeamSpotOnlineObjects* bs1);
-  const bool                   isGoodBS (const BeamSpotOnlineObjects* bs1);
+  const bool isGoodBS(const BeamSpotOnlineObjects* bs1);
 
   edm::ESGetToken<BeamSpotObjects, BeamSpotTransientObjectsRcd> const bsToken_;
   edm::ESGetToken<BeamSpotOnlineObjects, BeamSpotOnlineHLTObjectsRcd> bsHLTToken_;
@@ -108,9 +108,9 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::compareBS(const BeamSpotO
       return nullptr;
     }
   } else {
-    if (bs1->sigmaZ() > bs2->sigmaZ() && bs1->beamType() == 2) {
+    if (bs1->sigmaZ() > bs2->sigmaZ() && isGoodBS(bs1)) {
       return bs1;
-    } else if (bs2->sigmaZ() >= bs1->sigmaZ() && bs2->beamType() == 2) {
+    } else if (bs2->sigmaZ() >= bs1->sigmaZ() && isGoodBS(bs2)) {
       return bs2;
     } else {
       edm::LogInfo("OnlineBeamSpotESProducer")
@@ -141,16 +141,14 @@ const BeamSpotOnlineObjects* OnlineBeamSpotESProducer::checkSingleBS(const BeamS
 }
 
 // This method is used to check the quality of the beamspot fit
-
-const bool OnlineBeamSpotESProducer::isGoodBS (const BeamSpotOnlineObjects* bs1){
-
-  if (bs1->sigmaZ() > sigmaZThreshold_ && bs1->beamType() == 2 && bs1->beamWidthX() > sigmaXYThreshold_*1E-4 && bs1->beamWidthY() > sigmaXYThreshold_*1E-4) 
+const bool OnlineBeamSpotESProducer::isGoodBS(const BeamSpotOnlineObjects* bs1) {
+  if (bs1->sigmaZ() > sigmaZThreshold_ && bs1->beamType() == 2 && bs1->beamWidthX() > sigmaXYThreshold_ * 1E-4 &&
+      bs1->beamWidthY() > sigmaXYThreshold_ * 1E-4)
     return true;
-  
+
   else
     return false;
 }
-
 
 std::shared_ptr<const BeamSpotObjects> OnlineBeamSpotESProducer::produce(const BeamSpotTransientObjectsRcd& iRecord) {
   auto legacyRec = iRecord.tryToGetRecord<BeamSpotOnlineLegacyObjectsRcd>();
